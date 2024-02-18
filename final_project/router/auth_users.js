@@ -56,11 +56,19 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     let found_book = books[isbn];
     
     if (!username) {
-        return res.status(401).json({ message: "Unauthorized" });s
+        return res.status(401).json({ message: "Unauthorized" });
     }
-    if(found_user){
-        books[isbn].reviews[username] = review_text;
-        res.send('Review is added successfully.');
+    if(!review_text){
+        return res.status(401).json({ message: "Please input a review." });
+    }
+    if(username){
+        if(found_book.reviews[username]){
+            found_book.reviews[username] = review_text;
+            res.send('Review is modified successfully.');
+        } else {
+            found_book.reviews[username] = review_text;
+            res.send('Review is added successfully.');
+        }
     } else {
         return res.status(404).json({ message: "Book not found" });
     }
@@ -70,19 +78,15 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 regd_users.delete("/auth/review/:isbn", (req, res) => {
     const username = req.session.authorization.username;
     const isbn = req.params.isbn;
-    const found_book = books[isbn];
+    let found_book = books[isbn];
     if(!username){
         return res.status(401).json({ message: "Unauthorized" });s
     }
-    if (found_book) {
-        if (found_book.reviews[username]) {
-            delete books.reviews[username];
-            res.send(`Review deleted successfully`);
-        } else {
-            res.status(404).json({ message: "Review not found" });
-        }
+    if (found_book.reviews[username]) {
+        delete books[isbn].reviews[username];
+        res.send(`Review deleted successfully`);
     } else {
-        res.status(404).json({ message: "Book not found" });
+        res.status(404).json({ message: "Review not found" });
     }
 });
 
